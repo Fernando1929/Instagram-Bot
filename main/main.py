@@ -1,6 +1,7 @@
 import sys
 from selenium import webdriver
 from time import sleep
+from datetime import date
 
 #search for the username and password.
 sys.path.insert(0,'../resources/')
@@ -8,11 +9,12 @@ from secret import us, ps
 
 class instagramBot:
 
-    def __init__(self,username,password):
+    def __init__(self,username,password): 
+        self.date = str(date.today())
         self.webdriver = webdriver.Chrome()
         self.webdriver.get('http://instagram.com')
         sleep(2)
-
+     
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div[2]/p/a').click()
         sleep(4)
 
@@ -56,11 +58,21 @@ class instagramBot:
 
     def getFirstPost(self):
         #scroll down a little and select the first post
-        pass
+        self.webdriver.execute_script("window.scrollTo(0, 100)")
+        sleep(2)
+     
+        try:
+            try:
+                self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/div[3]/article/div[1]/div/div[1]/div[1]/a/div/div[2]').click()
+                #get the date and return it.
+                return self.webdriver.find_element_by_xpath('/html/body/div[4]/div[2]/div/article/div[2]/div[2]/a/time').get_attribute('title')
 
-    def getDate(self):
-        #return the year of the post 
-        pass
+            except:
+                self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/div[2]/article/div[1]/div/div[1]/div[1]/a/div[1]/div[2]').click()
+                sleep(2)
+                return self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/div/article/div[2]/div[2]/a/time').get_attribute('title')
+        except:
+            return '0000'
 
     #bot functions
     def getList(self):
@@ -75,9 +87,21 @@ class instagramBot:
         #gets a list about the people that you follow that does'nt follow you back.
         pass
 
-    def posibleUnfollows(self,following,followers):
+    def posibleUnfollows(self,following):
         #gets a list about the peole that are not posting resently 
-        pass
+        posUnf = []
+        for x in following:
+            self.getProfile(x)
+            sleep(2)
+            pdate = self.getFirstPost()
+            sleep(1)
+            compDate = str(pdate)[:4]
+            toDate = str(self.date)[:4]
+            #equals method or ==
+            if not toDate.__eq__(compDate):
+                posUnf.append(x)
+    
+
 
 
 nbot = instagramBot(us,ps)
