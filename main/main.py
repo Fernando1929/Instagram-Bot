@@ -15,14 +15,11 @@ class instagramBot:
         self.webdriver.get('http://instagram.com')
         sleep(2)
      
-        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div[2]/p/a').click()
-        sleep(4)
-
         #logins
-        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/article/div/div[1]/div/form/div[2]/div/label/input').send_keys(username)
-        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/article/div/div[1]/div/form/div[3]/div/label/input').send_keys(password)
-        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/article/div/div[1]/div/form/div[4]').click()
-        sleep(2)
+        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div[2]/div/label/input').send_keys(username)
+        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div[3]/div/label/input').send_keys(password)
+        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div[4]').click()
+        sleep(4)            
         self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div/div[3]/button[2]').click()
 
 
@@ -35,7 +32,7 @@ class instagramBot:
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[3]/div/div[1]/div/a/svg/path').click()
         sleep(2)
 
-    def getfollowers(self):
+    def getFollowers(self):
         self.goHome()
         sleep(2)
         self.goToProfile()
@@ -43,7 +40,7 @@ class instagramBot:
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/header/section/ul/li[2]/a').click()
         self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[1]/div/div[2]/button/svg/path').click()
 
-    def getfollowing(self):
+    def getFollowing(self):
         self.goHome()
         sleep(2)
         self.goToProfile()
@@ -77,15 +74,38 @@ class instagramBot:
     #bot functions
     def getList(self):
         #gets all the usernames from the following and follower list
-        pass
+        last_height , height = 0, 1
+        scroll_box = self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[2]/ul/div')
 
-    def createList(self,arr):
+        while last_height != height:
+            last_height = height
+            height = self.webdriver.execute_script(""" 
+                    arguments[0].scrollTo(0, arguments[0].scrollHeight);
+                    return arguments[0].scrollHeight);
+                    """, scroll_box)
+            links = scroll_box.find_element_by_tag('a')
+            names = [name.text for name in links if name.text != '']
+        
+        self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[1]/div/div[2]/button/svg').click()
+        
+        return names
+
+    def createList(self,arr,listname):
         #saves every list given to a text file
-        pass
+        with open(str(listname)+".txt", "w") as output:
+            output.write(str(arr))
     
     def getUnfollowers(self,following,followers):
         #gets a list about the people that you follow that does'nt follow you back.
-        pass
+        unflist = []
+
+        for x in following:
+            for y in followers:
+                if not x.__eq__(y):
+                    unflist.append(x)
+        
+        return unflist
+
 
     def posibleUnfollows(self,following):
         #gets a list about the peole that are not posting resently 
@@ -97,14 +117,25 @@ class instagramBot:
             sleep(1)
             compDate = str(pdate)[:4]
             toDate = str(self.date)[:4]
-            #equals method or ==
             if not toDate.__eq__(compDate):
                 posUnf.append(x)
     
 
-
-
 nbot = instagramBot(us,ps)
+
+nbot.getFollowers()
+lfollowing = nbot.getList()
+
+nbot.getFollowers()
+lfollowers = nbot.getList()
+
+lunfollowers = nbot.getUnfollowers(lfollowing,lfollowers)
+
+nbot.createList(lunfollowers,'Unfollowers')
+
+
+
+
 
 
 
