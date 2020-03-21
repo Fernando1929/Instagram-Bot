@@ -1,3 +1,4 @@
+.DS_Store
+resources/secret.py
 venv/
 __pycache__/
-secret.py
