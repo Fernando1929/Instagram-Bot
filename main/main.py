@@ -25,11 +25,11 @@ class instagramBot:
 
     #Profile functions
     def goToProfile(self):
-        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[3]/div/div[4]/a').click()
+        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/section/div[3]/div[1]/div/div[2]/div[1]/a').click()
         sleep(2)
 
     def goHome(self):
-        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[3]/div/div[1]/div/a/svg/path').click()
+        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[1]/a/div/div/img').click()
         sleep(2)
 
     def getFollowers(self):
@@ -38,15 +38,13 @@ class instagramBot:
         self.goToProfile()
         sleep(2)
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/header/section/ul/li[2]/a').click()
-        self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[1]/div/div[2]/button/svg/path').click()
-
+       
     def getFollowing(self):
         self.goHome()
         sleep(2)
         self.goToProfile()
         sleep(2)
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/header/section/ul/li[3]/a').click()
-        self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[1]/div/div[2]/button/svg/path').click()
 
     def getProfile(self,target):
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[2]/div/div/span[2]').sendKeys(target)
@@ -74,20 +72,22 @@ class instagramBot:
     #bot functions
     def getList(self):
         #gets all the usernames from the following and follower list
+        sleep(2)
         last_height , height = 0, 1
-        scroll_box = self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[2]/ul/div')
+        scroll_box = self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[2]')
 
         while last_height != height:
             last_height = height
+            sleep(2)
             height = self.webdriver.execute_script(""" 
                     arguments[0].scrollTo(0, arguments[0].scrollHeight);
-                    return arguments[0].scrollHeight);
+                    return arguments[0].scrollHeight;
                     """, scroll_box)
-            links = scroll_box.find_element_by_tag('a')
-            names = [name.text for name in links if name.text != '']
+
+        links = scroll_box.find_elements_by_tag_name('a')
+        names = [name.text for name in links if name.text != '']
         
-        self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[1]/div/div[2]/button/svg').click()
-        
+        self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[1]/div/div[2]/button').click()
         return names
 
     def createList(self,arr,listname):
@@ -100,8 +100,7 @@ class instagramBot:
         unflist = []
 
         for x in following:
-            for y in followers:
-                if not x.__eq__(y):
+                if not followers.__contains__(x):
                     unflist.append(x)
         
         return unflist
@@ -123,7 +122,7 @@ class instagramBot:
 
 nbot = instagramBot(us,ps)
 
-nbot.getFollowers()
+nbot.getFollowing()
 lfollowing = nbot.getList()
 
 nbot.getFollowers()
