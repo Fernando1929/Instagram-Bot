@@ -22,9 +22,9 @@ class instagramBot:
         sleep(4)            
         self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div/div[3]/button[2]').click()
 
+    ###########################################Profile functions##########################################
 
-    #Profile functions
-    def goToProfile(self):
+    def goToProfile(self): #go to user profile
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/section/div[3]/div[1]/div/div[2]/div[1]/a').click()
         sleep(2)
 
@@ -32,27 +32,28 @@ class instagramBot:
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[1]/a/div/div/img').click()
         sleep(2)
 
-    def getFollowers(self):
+    def getFollowers(self): #get people that follow you
         self.goHome()
         sleep(2)
         self.goToProfile()
         sleep(2)
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/header/section/ul/li[2]/a').click()
        
-    def getFollowing(self):
+    def getFollowing(self): #get people you follow
         self.goHome()
         sleep(2)
         self.goToProfile()
         sleep(2)
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/header/section/ul/li[3]/a').click()
 
-    def getProfile(self,target):
+    def getProfile(self,target): #look for a persons profile
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[2]/div/div/span[2]').sendKeys(target)
         sleep(1)
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[2]/div[2]/div[2]/div/a[1]').click()
+    
+    ###########################################Bot functions##############################################
 
-    def getFirstPost(self):
-        #scroll down a little and select the first post
+    def getFirstPost(self): #scroll down a little and select the first post
         self.webdriver.execute_script("window.scrollTo(0, 100)")
         sleep(2)
      
@@ -69,9 +70,7 @@ class instagramBot:
         except:
             return '0000'
 
-    #bot functions
-    def getList(self):
-        #gets all the usernames from the following and follower list
+    def getList(self): #gets all the usernames from the following and follower list
         sleep(2)
         last_height , height = 0, 1
         scroll_box = self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[2]')
@@ -90,14 +89,18 @@ class instagramBot:
         self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[1]/div/div[2]/button').click()
         return names
 
-    def createList(self,arr,listname):
-        #saves every list given to a text file
+    def createList(self,arr,listname): #saves every list given to a text file
         with open(str(listname)+".txt", "w") as output:
             output.write(str(arr))
     
-    def getUnfollowers(self,following,followers):
-        #gets a list about the people that you follow that does'nt follow you back.
+    def getUnfollowers(self): #gets a list about the people that you follow that doesn't follow you back.
         unflist = []
+
+        inbot.getFollowing()
+        following = inbot.getList()
+
+        inbot.getFollowers() 
+        followers = inbot.getList()
 
         for x in following:
                 if not followers.__contains__(x):
@@ -105,10 +108,11 @@ class instagramBot:
         
         return unflist
 
+    def getUnActiveFollowing(self): #gets a list about the peole that are not posting recently 
+        inbot.getFollowing()
+        following = inbot.getList()
 
-    def posibleUnfollows(self,following):
-        #gets a list about the peole that are not posting resently 
-        posUnf = []
+        unactivel = []
         for x in following:
             self.getProfile(x)
             sleep(2)
@@ -117,21 +121,14 @@ class instagramBot:
             compDate = str(pdate)[:4]
             toDate = str(self.date)[:4]
             if not toDate.__eq__(compDate):
-                posUnf.append(x)
-    
+                unactivel.append(x)
 
-nbot = instagramBot(us,ps)
+    #################################################Testing#####################################################
 
-nbot.getFollowing()
-lfollowing = nbot.getList()
+inbot = instagramBot(us,ps)
+inbot.createList(inbot.getUnfollowers(),'Unfollowers')
 
-nbot.getFollowers()
-lfollowers = nbot.getList()
-
-lunfollowers = nbot.getUnfollowers(lfollowing,lfollowers)
-
-nbot.createList(lunfollowers,'Unfollowers')
-
+inbot.getUnActiveFollowing()
 
 
 
