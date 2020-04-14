@@ -3,13 +3,12 @@ from selenium import webdriver
 from time import sleep
 from datetime import date
 
-#search for the username and password.
-sys.path.insert(0,'../resources/')
+sys.path.insert(0,'../resources/') # search for the username and password.
 from secret import us, ps
 
 class instagramBot:
 
-    def __init__(self,username,password): 
+    def __init__(self,username,password):
         self.date = str(date.today())
         self.webdriver = webdriver.Chrome()
         self.webdriver.get('http://instagram.com')
@@ -47,8 +46,9 @@ class instagramBot:
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/header/section/ul/li[3]/a').click()
 
     def getProfile(self,target): #look for a persons profile
-        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[2]/div/div/span[2]').sendKeys(target)
-        sleep(1)
+        inbot.goHome()
+        self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[2]/input').send_keys(target)
+        sleep(2)
         self.webdriver.find_element_by_xpath('/html/body/div[1]/section/nav/div[2]/div/div/div[2]/div[2]/div[2]/div/a[1]').click()
     
     ###########################################Bot functions##############################################
@@ -57,18 +57,21 @@ class instagramBot:
         self.webdriver.execute_script("window.scrollTo(0, 100)")
         sleep(2)
      
-        try:
-            try:
+        try: #get the date and return it.
+            try: #single image
                 self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/div[3]/article/div[1]/div/div[1]/div[1]/a/div/div[2]').click()
-                #get the date and return it.
-                return self.webdriver.find_element_by_xpath('/html/body/div[4]/div[2]/div/article/div[2]/div[2]/a/time').get_attribute('title')
-
-            except:
+                sleep(4)
+                time = self.webdriver.find_element_by_xpath('/html/body/div[4]/div[2]/div/article/div[2]/div[2]/a').find_element_by_tag_name('time').get_attribute('title')
+                self.webdriver.find_element_by_xpath('/html/body/div[4]/div[3]/button').click()
+                return time
+            except: #multi image or video
                 self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/div[2]/article/div[1]/div/div[1]/div[1]/a/div[1]/div[2]').click()
-                sleep(2)
-                return self.webdriver.find_element_by_xpath('/html/body/div[1]/section/main/div/div/article/div[2]/div[2]/a/time').get_attribute('title')
+                sleep(4)
+                time = self.webdriver.find_element_by_xpath('/html/body/div[4]/div[2]/div/article/div[2]/div[2]/a').find_element_by_tag_name('time').get_attribute('title')
+                self.webdriver.find_element_by_xpath('/html/body/div[4]/div[3]/button').click()
+                return time
         except:
-            return '0000'
+            return ''
 
     def getList(self): #gets all the usernames from the following and follower list
         sleep(2)
@@ -84,17 +87,17 @@ class instagramBot:
                     """, scroll_box)
 
         links = scroll_box.find_elements_by_tag_name('a')
-        names = [name.text for name in links if name.text != '']
+        name_list = [name.text for name in links if name.text != '']
         
         self.webdriver.find_element_by_xpath('/html/body/div[4]/div/div[1]/div/div[2]/button').click()
-        return names
+        return name_list
 
     def createList(self,arr,listname): #saves every list given to a text file
         with open(str(listname)+".txt", "w") as output:
             output.write(str(arr))
     
     def getUnfollowers(self): #gets a list about the people that you follow that doesn't follow you back.
-        unflist = []
+        unfollowers_list = []
 
         inbot.getFollowing()
         following = inbot.getList()
@@ -104,31 +107,40 @@ class instagramBot:
 
         for x in following:
                 if not followers.__contains__(x):
-                    unflist.append(x)
+                    unfollowers_list.append(x)
         
-        return unflist
+        return unfollowers_list
 
     def getUnActiveFollowing(self): #gets a list about the peole that are not posting recently 
         inbot.getFollowing()
         following = inbot.getList()
-
-        unactivel = []
+        unactive_list = []
         for x in following:
+            self.goHome()
+            sleep(2)
             self.getProfile(x)
             sleep(2)
-            pdate = self.getFirstPost()
+            postDate = self.getFirstPost()
             sleep(1)
-            compDate = str(pdate)[:4]
-            toDate = str(self.date)[:4]
-            if not toDate.__eq__(compDate):
-                unactivel.append(x)
+            compDate = str(postDate)[-4:]
+            todaysDate = str(self.date)[:4]
+            if not todaysDate.__eq__(compDate):
+                unactive_list.append(x,compDate)
+        
+        return unactive_list
+        
+    def exit(self):
+        self.webdriver.__exit__()
+        sys.exit()
 
     #################################################Testing#####################################################
 
-inbot = instagramBot(us,ps)
-inbot.createList(inbot.getUnfollowers(),'Unfollowers')
 
-inbot.getUnActiveFollowing()
+inbot = instagramBot(us,ps)
+#inbot.createList(inbot.getUnfollowers(),'Unfollowers') # to get unfollowers
+#inbot.createList(inbot.getUnActiveFollowing(),'UnactiveAccounts') # to get unactive Accounts
+
+
 
 
 
