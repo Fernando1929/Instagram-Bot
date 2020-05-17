@@ -1,4 +1,4 @@
 .DS_Store
-resources/secret.py
+botconfig/botconfig.py
 venv/
 __pycache__/
